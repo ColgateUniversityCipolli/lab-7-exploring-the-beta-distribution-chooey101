@@ -88,23 +88,46 @@ graph_funct <- function(alpha, beta){
   beta.sample <- rbeta(n = sample.size, # sample size
                        shape1 = alpha, # alpha parameter
                        shape2 = beta) #beta
+  data <- tibble(x = beta.sample)
   
-  tibble(x=beta.sample) |>
+  # Calculate summary statistics
+  stats <- data |>
     summarize(
       mean = mean(x),
       variance = var(x),
       skewness = skewness(x),
-      ex_kurt = (kurtosis(x))
+      ex_kurtosis = (kurtosis(x) - 3)  # Excess kurtosis
     )
   
-  histogram <- hist(beta.sample)
-  histogram 
+  plot <- ggplot(data, aes(x = x)) +
+    geom_histogram(
+      aes(y = after_stat(density)), 
+      bins = 30, 
+      fill = "lightblue", 
+      color = "blue",
+      alpha = 0.5  # Add some transparency
+    ) +
+    geom_density(color = "red", linewidth = 1) +
+    labs(
+      title = bquote("Beta Distribution (α = " ~ .(alpha) ~ ", β = " ~ .(beta) ~ ")"),
+      x = "Value",
+      y = "Density"
+    ) +
+    theme_minimal()
   
-
-  ggplot(data = beta.sample)+
-  geom_density
-    
+  # Combine all results into a list
+  results <- list(
+    sample = beta.sample,
+    summary_stats = stats,
+    plot = plot,
+    alpha = alpha,
+    beta = beta,
+    sample_size = sample.size
+  )
+  
+  return(results)
 }
+
 
 
 
