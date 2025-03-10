@@ -1,5 +1,6 @@
 library(tidyverse)
 library(e1071)
+libary(patchwork)
 ######Part 1########
 
 
@@ -127,6 +128,57 @@ graph_funct <- function(alpha, beta){
   
   return(results)
 }
+#################################
+#######Task 4########
+#################################
+true_stats <- stat_funct(2, 5)
+set.seed(7272+i)
+beta_values <- rbeta(500, shape1 = 2, shape2 = 5) #beta distribution for alpha=5 and beta=2
+cum_beta <- cumean(beta_values)
+cum_variance  <- cumvar(beta_values)
+cum_skewness  <- cumskewness(beta_values)
+cum_kurtosis  <- cumkurtosis(beta_values) - 3
+
+df <- data.frame(
+  Index = 1:500,
+  Mean = cum_beta,
+  Variance = cum_variance,
+  Skewness = cum_skewness,
+  Ex_kurt = cum_kurtosis
+)
+
+
+# Individual plots with true value intercepts
+p1 <- ggplot(df, aes(x = Index, y = Mean)) +
+  geom_line(color = "steelblue") +
+  geom_hline(yintercept = true_stats$mean, color = "red", linetype = "dashed") +
+  labs(title = "Cumulative Mean", x = "Observation", y = "Mean") +
+  theme_minimal()
+
+p2 <- ggplot(df, aes(x = Index, y = Variance)) +
+  geom_line(color = "darkgreen") +
+  geom_hline(yintercept = true_stats$variance, color = "red", linetype = "dashed") +
+  labs(title = "Cumulative Variance", x = "Observation", y = "Variance") +
+  theme_minimal()
+
+p3 <- ggplot(df, aes(x = Index, y = Skewness)) +
+  geom_line(color = "purple") +
+  geom_hline(yintercept = true_stats$skewness, color = "red", linetype = "dashed") +
+  labs(title = "Cumulative Skewness", x = "Observation", y = "Skewness") +
+  theme_minimal()
+
+p4 <- ggplot(df, aes(x = Index, y = Kurtosis)) +
+  geom_line(color = "orange") +
+  geom_hline(yintercept = true_stats$ex_kurt, color = "red", linetype = "dashed") +
+  labs(title = "Cumulative Kurtosis (Excess)", x = "Observation", y = "Kurtosis") +
+  theme_minimal()
+
+(p1 | p2) / (p3 | p4) #Creates 2x2 grid of plots using patchwork
+#################################
+#######Task 5########
+#################################
+
+
 
 
 
