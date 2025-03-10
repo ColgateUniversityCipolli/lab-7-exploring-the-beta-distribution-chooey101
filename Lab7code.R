@@ -174,11 +174,128 @@ p4 <- ggplot(df, aes(x = Index, y = Kurtosis)) +
   theme_minimal()
 
 (p1 | p2) / (p3 | p4) #Creates 2x2 grid of plots using patchwork
+
+
+#############################
+#Task 4.5---Using Loops
+#############################
+true_stats <- stat_funct(2, 5)
+set.seed(7272+i)
+beta_values <- rbeta(500, shape1 = 2, shape2 = 5) #beta distribution for alpha=5 and beta=2
+cum_beta <- cumean(beta_values)
+cum_variance  <- cumvar(beta_values)
+cum_skewness  <- cumskewness(beta_values)
+cum_kurtosis  <- cumkurtosis(beta_values) - 3
+
+df <- data.frame(
+  Index = 1:500,
+  Mean = cum_beta,
+  Variance = cum_variance,
+  Skewness = cum_skewness,
+  Ex_kurt = cum_kurtosis
+)
+# Initial empty plots
+p_mean <- ggplot() + theme_minimal() +
+  labs(title = "Cumulative Mean", x = "Observation", y = "Mean") +
+  geom_hline(yintercept = true_stats$mean, color = "red", linetype = "dashed")
+
+p_var <- ggplot() + theme_minimal() +
+  labs(title = "Cumulative Variance", x = "Observation", y = "Variance") +
+  geom_hline(yintercept = true_stats$variance, color = "red", linetype = "dashed")
+
+p_skew <- ggplot() + theme_minimal() +
+  labs(title = "Cumulative Skewness", x = "Observation", y = "Skewness") +
+  geom_hline(yintercept = true_stats$skewness, color = "red", linetype = "dashed")
+
+p_kurt <- ggplot() + theme_minimal() +
+  labs(title = "Cumulative Kurtosis (Excess)", x = "Observation", y = "Kurtosis") +
+  geom_hline(yintercept = true_stats$ex_kurt, color = "red", linetype = "dashed")
+
+# Simulate and plot cumulative statistics for iterations 2 through 50
+for(i in 2:50){
+  set.seed(7272 + i)
+  beta_values <- rbeta(500, shape1 = 2, shape2 = 5)
+  
+  df_iter <- data.frame(
+    Index = 1:500,
+    Mean = cumean(beta_values),
+    Variance = cumvar(beta_values),
+    Skewness = cumskewness(beta_values),
+    Kurtosis = cumkurtosis(beta_values) - 3
+  )
+  
+  # Add lines for each iteration to plots with varying colors
+  p_mean <- p_mean +
+    geom_line(data = df_iter, aes(x = Index, y = Mean), color = i, alpha = 0.6)
+  
+  p_var <- p_var +
+    geom_line(data = df_iter, aes(x = Index, y = Variance), color = i, alpha = 0.6)
+  
+  p_skew <- p_skew +
+    geom_line(data = df_iter, aes(x = Index, y = Skewness), color = i, alpha = 0.6)
+  
+  p_kurt <- p_kurt +
+    geom_line(data = df_iter, aes(x = Index, y = Kurtosis), color = i, alpha = 0.6)
+}
+
+# Combine plots using patchwork
+(p_mean | p_var) / (p_skew | p_kurt)
+
 #################################
 #######Task 5########
 #################################
+for (i in 1:1000) {
+  set.seed(7272 + i)
+  beta_values <- rbeta(500, shape1 = 2, shape2 = 5)
+  
+  # Calculate statistics
+  sim_results <- sim_results %>%
+    add_row(iteration = i,
+            mean = mean(beta_values),
+            variance = var(beta_values),
+            skewness = cumstats::skewness(beta_values),
+            kurtosis = cumstats::kurtosis(beta_values) - 3) # Excess kurtosis
+}
 
+# Plotting histograms with estimated density curves:
 
+library(ggplot2)
+
+# Mean histogram and density
+p_mean <- ggplot(sim_results, aes(x=mean)) +
+  geom_histogram(aes(y=..density..), fill="steelblue", alpha=0.5, bins=30) +
+  geom_density(color="blue") +
+  geom_vline(xintercept = true_stats$mean, color="red", linetype="dashed") +
+  theme_minimal() +
+  labs(title = "Mean", x = "Mean", y = "Density")
+
+# Variance plot
+p_variance <- ggplot(sim_results, aes(x=variance)) +
+  geom_histogram(aes(y=..density..), bins=30, fill="green", alpha=0.5) +
+  geom_density(color="darkgreen") +
+  geom_vline(xintercept = true_stats$variance, color="red", linetype="dashed") +
+  theme_minimal() +
+  labs(title = "Variance", x = "Variance", y = "Density")
+
+# Skewness
+p_skewness <- ggplot(sim_results, aes(x=skewness)) +
+  geom_histogram(aes(y=..density..), fill="purple", alpha=0.6, bins=30) +
+  geom_density(color="purple") +
+  geom_vline(xintercept = true_stats$skewness, color="red", linetype="dashed") +
+  theme_minimal() +
+  labs(title = "Skewness", x = "Skewness", y = "Density")
+
+# Kurtosis
+p_kurtosis <- ggplot(sim_results, aes(x=kurtosis)) +
+  geom_histogram(bins=30, aes(y=..density..), fill="orange") +
+  geom_density(color="brown") +
+  geom_vline(xintercept = true_stats$ex_kurt, color="red", linetype="dashed") +
+  theme_minimal() +
+  labs(title = "Kurtosis (Excess)", x = "Kurtosis", y = "Density")
+p_mean
+p_variance
+p_skewness
+p_kurtosis
 
 
 
