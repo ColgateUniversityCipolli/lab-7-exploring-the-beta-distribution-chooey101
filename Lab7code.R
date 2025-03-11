@@ -1,6 +1,8 @@
 library(tidyverse)
 library(e1071)
 libary(patchwork)
+library(nleqslv)
+library(cumstats)
 ######Part 1########
 
 
@@ -296,6 +298,54 @@ p_mean
 p_variance
 p_skewness
 p_kurtosis
+
+############
+#Lab 8
+############
+
+##Task 6##
+wb.data <- read_csv("wbdata.csv") 
+wb.data <- wb.data[-2, ] |>
+select(67) |>
+rename("2022_data" = "...67")|>
+mutate(`2022_data` = if_else(row_number() %in% 2:267, `2022_data` / 1000, `2022_data`))
+
+
+##Task 7##
+
+#Method of Moments Function
+MOM.beta <- function(data, par){
+  alpha <- par[1]
+  beta <- par[2]
+  
+  EX1 <- (alpha)/(alpha+beta)
+  EX2 <- ((alpha+1)*alpha)/((alpha+beta+1)*(alpha+beta))
+  m1 <- mean(data)
+  m2 <- mean((data)^2)
+  estimates <- c(EX1-m1,EX2-m2)
+  return (estimates) # Goal: find lambda so this is 0
+}
+#Solve for MOM
+nleqslv(x=c(1,1),
+        fn = MOM.beta,
+        data=wb.data$`2022_data`)
+
+#MLE Function
+llbeta <- function(data, par, neg=FALSE){
+  lambda <- par[1]
+  loglik <- sum(log(dbeta(x=data, lambda = lambda)))
+  
+  return(ifelse(neg, -loglik, loglik))
+}
+
+###Solve for MLE
+optim(par = 2,
+      fn = llbeta,
+      data=wb.data$`2022_data`,
+      method = "Brent",
+      lower = 0,
+      upper = 1,
+      neg = F)
 
 
 
