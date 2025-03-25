@@ -1,6 +1,6 @@
 library(tidyverse)
 library(e1071)
-libary(patchwork)
+library(patchwork)
 library(nleqslv)
 library(cumstats)
 ######Part 1########
@@ -134,7 +134,7 @@ graph_funct <- function(alpha, beta){
 #######Task 4########
 #################################
 true_stats <- stat_funct(2, 5)
-set.seed(7272+i)
+set.seed(7272 + i)
 beta_values <- rbeta(500, shape1 = 2, shape2 = 5) #beta distribution for alpha=5 and beta=2
 cum_beta <- cumean(beta_values)
 cum_variance  <- cumvar(beta_values)
@@ -182,7 +182,7 @@ p4 <- ggplot(df, aes(x = Index, y = Kurtosis)) +
 #Task 4.5---Using Loops
 #############################
 true_stats <- stat_funct(2, 5)
-set.seed(7272+i)
+set.seed(7272 + i)
 beta_values <- rbeta(500, shape1 = 2, shape2 = 5) #beta distribution for alpha=5 and beta=2
 cum_beta <- cumean(beta_values)
 cum_variance  <- cumvar(beta_values)
@@ -242,7 +242,12 @@ for(i in 2:50){
 
 # Combine plots using patchwork
 (p_mean | p_var) / (p_skew | p_kurt)
-
+sim_results <- tibble(
+  mean = numeric(),
+  variance = numeric(),
+  skewness = numeric(),
+  kurtosis = numeric()
+)
 #################################
 #######Task 5########
 #################################
@@ -251,12 +256,12 @@ for (i in 1:1000) {
   beta_values <- rbeta(500, shape1 = 2, shape2 = 5)
   
   # Calculate statistics
-  sim_results <- sim_results %>%
-    add_row(iteration = i,
-            mean = mean(beta_values),
-            variance = var(beta_values),
-            skewness = cumstats::skewness(beta_values),
-            kurtosis = cumstats::kurtosis(beta_values) - 3) # Excess kurtosis
+  sim_results <- sim_results |>
+    add_row(
+      mean = mean(beta_values),
+      variance = var(beta_values),
+      skewness = cumstats::skewness(beta_values),
+      kurtosis = cumstats::kurtosis(beta_values) - 3) # Excess kurtosis
 }
 
 # Plotting histograms with estimated density curves:
@@ -306,15 +311,15 @@ p_kurtosis
 ##Task 6##
 wb.data <- read_csv("wbdata.csv") 
 wb.data <- wb.data[-2, ] |>
-select(67) |>
-rename("2022_data" = "...67")|>
-mutate(`2022_data` = if_else(row_number() %in% 2:267, `2022_data` / 1000, `2022_data`))
+  select(67) |>
+  rename("2022_data" = "...67")|>
+  mutate(`2022_data` = if_else(row_number() %in% 2:267, `2022_data` / 1000, `2022_data`))
 
 
 ##Task 7##
 
 #Method of Moments Function
-MOM.beta <- function(data, par){
+MOM.beta.fn <- function(data, par){
   alpha <- par[1]
   beta <- par[2]
   
@@ -332,8 +337,9 @@ nleqslv(x=c(1,1),
 
 #MLE Function
 llbeta <- function(data, par, neg=FALSE){
-  lambda <- par[1]
-  loglik <- sum(log(dbeta(x=data, lambda = lambda)))
+  alpha <- par[1]
+  beta <- par[2]  
+  loglik <- sum(log(dbeta(x=data, shape1 = alpha, shape2 = beta)))
   
   return(ifelse(neg, -loglik, loglik))
 }
@@ -346,6 +352,45 @@ optim(par = 2,
       lower = 0,
       upper = 1,
       neg = F)
+
+
+
+#############
+# Task 8 -- Which estimators should we use?
+#############
+pt.est <- tibble(
+  iteration = numeric(),
+  MLE.alpha = numeric(),
+  MLE.beta = numeric(),
+  MOM.alpha = numeric(),
+  MOM.beta = numeric()
+)
+for(i in 1:1000){
+  set.seed(7272 + i)
+  beta_estimation_values <- rbeta(266, shape1 = 8, shape2 = 950)
+  MLE.est = optim(par = c(8,950),
+                  fn = llbeta,
+                  data = beta_estimation_values,
+                  neg = F)
+  MLE.alpha = MLE.est$par[1]
+  MLE.beta = MLE.est$par[2]
+  
+  MOM.est = nleqslv(x=c(8,950),
+                    fn = MOM.beta.fn,
+                    data = beta_estimation_values)
+  MOM.alpha = MOM.est$x[1]
+  MOM.beta = MOM.est$x[2]
+  
+  pt.est <- pt.est |>
+    add_row(
+      iteration = i,
+      MLE.alpha = MLE.alpha,
+      MLE.beta = MLE.beta,
+      MOM.alpha = MOM.alpha, 
+      MOM.beta = MOM.beta
+      
+    )
+}
 
 
 
