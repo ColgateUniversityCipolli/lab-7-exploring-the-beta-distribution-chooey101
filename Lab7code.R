@@ -371,7 +371,7 @@ for(i in 1:1000){
   MLE.est = optim(par = c(8,950),
                   fn = llbeta,
                   data = beta_estimation_values,
-                  neg = F)
+                  neg = T)
   MLE.alpha = MLE.est$par[1]
   MLE.beta = MLE.est$par[2]
   
@@ -392,6 +392,69 @@ for(i in 1:1000){
     )
 }
 
+p_mle_alpha <- ggplot(pt.est, aes(x=MLE.alpha))+
+  geom_histogram(aes(y=after_stat(density)), fill="steelblue", alpha=0.5, bins=30) +
+  geom_density(color="blue") +
+  theme_minimal() +
+  labs(title = "MLE Alpha", x = "MLE Alpha", y = "Density")
+
+p_mle_beta <- ggplot(pt.est, aes(x=MLE.beta))+
+  geom_histogram(aes(y=after_stat(density)), fill="purple", alpha=0.5, bins=30) +
+  geom_density(color="red") +
+  theme_minimal() +
+  labs(title = "MLE Beta", x = "MLE Beta", y = "Density")
+
+p_mom_alpha <- ggplot(pt.est, aes(x=MOM.alpha))+
+  geom_histogram(aes(y=after_stat(density)), fill="orange", alpha=0.5, bins=30) +
+  geom_density(color="brown") +
+  theme_minimal() +
+  labs(title = "MOM Alpha", x = "MLE Alpha", y = "Density")
+
+p_mom_beta <- ggplot(pt.est, aes(x=MOM.beta))+
+  geom_histogram(aes(y=after_stat(density)), fill="green", alpha=0.5, bins=30) +
+  geom_density(color="darkgreen") +
+  theme_minimal() +
+  labs(title = "MOM Beta", x = "MLE Beta", y = "Density")
+
+
+(p_mle_alpha | p_mle_beta) / (p_mom_alpha | p_mom_beta)
+
+true_alpha = 8
+true_beta = 950
+
+#Calculation of Bias
+stats.tib <- tibble(
+Method = character(),
+Bias = numeric(),
+Precision = numeric(),
+MSE = numeric()
+)
+new.rows <- tibble(
+Method = c("MLE Alpha","MLE Beta","MOM Alpha","MOM Beta"),
+
+Bias = c(
+  mean(pt.est$MLE.alpha, na.rm=TRUE) - true_alpha,
+  mean(pt.est$MLE.beta, na.rm=TRUE) - true_beta,
+  mean(pt.est$MOM.alpha, na.rm=TRUE) - true_alpha,
+  mean(pt.est$MOM.beta, na.rm =TRUE) - true_beta
+),
+
+Precision = c(
+1/var(pt.est$MLE.alpha),
+1/var(pt.est$MLE.beta),
+1/var(pt.est$MOM.alpha),
+1/var(pt.est$MOM.beta)
+),
+
+MSE = c(
+var(pt.est$MLE.alpha) + (mean(pt.est$MLE.alpha, na.rm=TRUE) - true_alpha)^2,
+var(pt.est$MLE.beta) + (mean(pt.est$MLE.beta, na.rm=TRUE) - true_beta)^2,
+var(pt.est$MOM.alpha) + (mean(pt.est$MOM.alpha, na.rm=TRUE) - true_alpha)^2,
+var(pt.est$MLE.beta) + (mean(pt.est$MLE.beta, na.rm=TRUE) - true_beta)^2
+)
+)
+
+stats.tib <- bind_rows(stats.tib, new.rows)
 
 
 
