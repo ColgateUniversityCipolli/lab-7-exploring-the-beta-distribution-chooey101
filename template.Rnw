@@ -51,15 +51,9 @@ You want to provide enough background to understand the context of the work. Spe
 
 Provide a roadmap of the structure of the paper. 
 
-\subsection{Intro Subsection}
-You might need/want to discuss the topics in subsections. Or, you may have multiple questions.
 
-\begin{Figure}
-\includegraphics{screenshot}
-\end{Figure}
-
-\section{Methods}
-Describe the data you are working with, if applicable. Describe the specific process you will follow to answer the question at hand. This does not mean you should write something like this.
+\section{Density Functions and Parameters}
+As mentioned before, this laboratory assignment was aimed at deepening our understanding of and strengthening our ability to interact with the beta distribution. Being a continuous distribution, we first interpreted the behavior of the beta distribution through examining how its parameters of alpha and beta dictate the behavior of the distribution's probability density function. For such, we analyzed the beta distribution with four different combinations of the alpha and beta parameters:
 \begin{quote}
 \textit{I did this and then I did that and then I did this other thing and then..., and then..., and then...}
 \end{quote}
