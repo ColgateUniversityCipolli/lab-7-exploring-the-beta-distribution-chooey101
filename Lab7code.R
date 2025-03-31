@@ -9,6 +9,8 @@ library(cumstats)
 #statistical summary
 stat_funct <- function (alpha,beta) {
   tibble(
+    alpha = alpha,
+    beta = beta,
     mean =  alpha/(alpha+beta),
     variance = (alpha*beta)/(((alpha+beta)^2)*(alpha+beta+1)),
     skewness = (2*(beta-alpha)*sqrt(alpha+beta+1))/((alpha+beta+2)*sqrt(alpha*beta)),
@@ -16,8 +18,21 @@ stat_funct <- function (alpha,beta) {
   )
 }
 
+
+
+beta_table <- tibble(
+alpha = double(),
+beta = double(),
+mean = double(),
+variance = double(),
+skewness = double(),
+ex_kurt = double()
+)
+
 plot_funct <- function (alpha,beta) {
   tibble(
+    alpha = alpha,
+    beta = beta,
     mean =  alpha/(alpha+beta),
     variance = (alpha*beta)/(((alpha+beta)^2)*(alpha+beta+1)),
     skewness = (2*(beta-alpha)*sqrt(alpha+beta+1))/((alpha+beta+2)*sqrt(alpha*beta)),
@@ -26,13 +41,13 @@ plot_funct <- function (alpha,beta) {
   
   q1.fig.dat <- tibble(x = seq(-0.25, 1.25, length.out=1000))|> # generate a grid of points
     mutate(beta.pdf = dbeta(x, alpha, beta), # compute the beta PDF
-           norm.pdf = dnorm(x, # Gaussian distribution with
-                            mean = alpha/(alpha+beta), # same mean and variance
+           norm.pdf = dnorm(x, # Gaussian distribution with same mean and variance
+                            mean = alpha/(alpha+beta), 
                             sd = sqrt((alpha*beta)/((alpha+beta)^2*(alpha+beta+1)))))
   
   ggplot(data= q1.fig.dat)+ # specify data
     geom_line(aes(x=x, y=beta.pdf, color="Beta(2,5)")) + # plot beta dist
-    geom_line(aes(x=x, y=norm.pdf, color="Gaussian(0.2857, 0.0255)")) + # plot guassian dist
+    geom_line(aes(x=x, y=norm.pdf, color="Gaussian(0.2857, 0.0255)")) + # plot gaussian dist
     geom_hline(yintercept=0)+ # plot x axis
     theme_bw()+ # change theme
     xlab("x")+ # label x axis
@@ -40,9 +55,21 @@ plot_funct <- function (alpha,beta) {
     scale_color_manual("", values = c("black", "grey"))+ # change colors
     theme(legend.position = "bottom") 
 }
-stat_funct(2,5) #Compute and graph summary for a=2, b=5
-stat_funct(5,5) #Compute and graph summary for a=5, b=5
-stat_funct(0.5,0.5) #Compute and graph summary for a=.5, b=.5
+#Compute and graph summary for a=2, b=5
+plot_funct(2,5)
+plot_funct(5,5) #Compute and graph summary for a=5, b=5
+plot_funct(5,2)
+plot_funct(0.5,0.5) #Compute and graph summary for a=.5, b=.5
+
+stat25 <- stat_funct(2,5) #Compute and graph summary for a=2, b=5
+stat55 <- stat_funct(5,5) #Compute and graph summary for a=5, b=5
+stat52 <- stat_funct(5,2)
+stat.5 <- stat_funct(0.5,0.5) #Compute and graph summary for a=.5, b=.5
+
+beta_table <- rbind(beta_table, stat25)
+beta_table <- rbind(beta_table, stat55)
+beta_table <- rbind(beta_table, stat52)
+beta_table <- rbind(beta_table, stat.5)
 
 ############Task 2-Compute the Moments##########
 beta.moment <- function(alpha, beta, k, centered=TRUE){
