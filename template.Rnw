@@ -56,16 +56,15 @@ Provide a roadmap of the structure of the paper.
 As mentioned before, this laboratory assignment was aimed at deepening our understanding of and strengthening our ability to interact with the beta distribution. Being a continuous distribution, we first interpreted the behavior of the beta distribution through examining how its parameters of alpha and beta dictate the shape of the distribution's probability density function. To do such, we analyzed the beta distribution with four different combinations of the alpha and beta parameters:
 %%%insert alpha and beta combinations here
 
-After computing the numerical summary for each of the distributions, we graphed them each with a density plot and superimposed a normal distribution with the same mean and variance to observe the differences between the two as the shape of the beta distribution changes. Comparing all four graphs of the distributions led to an assumption that a negative difference between alpha and beta leads to the distribution being more right skewed while a positive difference reflected the opposite. When the two are the same, the data is 
+After computing the numerical summary for each of the distributions, we graphed them each with a density plot and superimposed a normal distribution with the same mean and variance to observe the differences between the two as the shape of the beta distribution changes. Comparing all four graphs of the distributions led us to make an assumption that a negative difference between alpha and beta leads to the distribution being more right skewed while a positive difference reflected the opposite. When the two are the same, the data has a skewness of zero.
 
 Instead, it should provide a clear and concise narrative that flows from the problem specification in the Introduction to how you will approach answering it. This is where I would expect to see some citations for \texttt{R} packages you will use to conduct the statistical analysis reported in the Results section.
 
 
-\subsection{Methods Subsection}
-Much like the Introduction, subsections can be helpful for the Methods section. For example, you might describe data collection and the statistical analyses of the collected data in different subsections. Or, you may have different questions that require distinct methods. 
 
-\section{Results}
-Tie together the Introduction -- where you introduce the problem at hand -- and the methods --  what you propose to do to answer the question. Present your data, the results of your analyses, and how each reported aspect contributes to answering the question. This section should include table(s), statistic(s), and graphical displays. Make sure to put the results in a sensible order and that each result contributes a logical and developed solution. It should not just be a list. Avoid being repetitive. 
+
+\section{Properties of the Beta Distribution}
+The statistical components of the beta distribution that we analyzed were its mean, variance, skewness and kurtosis. To calculate the statistics of the four pairs of beta distribution parameters we had analyzed numerically and graphically, we first used formulas that were strictly dependent on the parameters alpha and beta. For the second task of this lab, however, we obtained these statistical measurements using the centered and uncentered moments of the beta distribution, which all of the statistics of interest are comprised of. When comparing the values obtained by using the moments to the measurements found with the alpha and beta parameter formulas, we observed that each measurement is almost exactly the same.
 
 \subsection{Results Subsection}
 Subsections can be helpful for the Results section, too. This can be particularly helpful if you have different questions to answer. 
