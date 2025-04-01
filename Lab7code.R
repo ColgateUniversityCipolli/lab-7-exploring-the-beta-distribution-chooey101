@@ -341,9 +341,9 @@ wb.data <- read_csv("wbdata.csv")
 wb.data <- wb.data |>
   select(67) |>
   rename("2022_data" = "...67")|>
-  mutate(`2022_data` = if_else(row_number() %in% 2:267, `2022_data` / 1000, `2022_data`))
+  mutate(`2022_data` = if_else(row_number() %in% 1:267, `2022_data` / 1000, `2022_data`))
 
-
+wb.data <- wb.data[-c(1, 2,266), ] #Removing outlyers
 ##Task 7##
 
 #Method of Moments Function
@@ -366,43 +366,41 @@ mom_result <- nleqslv(x=c(1,1),
 alpha_mom <- mom_result$x[1]
 beta_mom <- mom_result$x[2]
 
-data_df <- data.frame(x = wb.data$`2022_data`)
 
-ggplot(data = data_df, aes(x = x)) +
-  # Plot the histogram
-  geom_histogram(aes(y = ..density..),bins=30
-                 , fill = "lightblue", color = "black") +
-  
-  # Add the MOM Beta distribution
-  stat_function(
-    fun = function(x) dbeta(x, shape1 = alpha_mom, shape2 = beta_mom),
-    color = "red", size = 1.5
-  ) +
-  
-  # Customize the plot
-  labs(
-    title = "Histogram of Data with MOM Beta Distribution",
-    x = "Data Values",
-    y = "Density"
-  ) +
-  theme_minimal()
 
 #MLE Function
 llbeta <- function(par, data, neg=FALSE){
   alpha <- par[1]
   beta <- par[2]  
-  loglik <- sum(log(dbeta(x=data, shape1 = alpha, shape2 = beta)), na.rm=T)
+  loglik <- sum(log(dbeta(data, shape1 = alpha, shape2 = beta)))
   
   return(ifelse(neg, -loglik, loglik))
 }
 
+
+wb.clean <-na.omit(wb.data$`2022_data`)
+
+MLE.ans = optim(par = c(1,1), fn = llbeta, data = wb.clean, neg = T)
+
+alpha_mle <- MLE.ans$par[1]
+beta_mle <- MLE.ans$par[2]
+
+# Compute the density values using MOM and MLE parameters
+mom_density <- dbeta(wb.clean, shape1 = alpha_mom, shape2 = beta_mom)
+mle_density <- dbeta(wb.clean, shape1 = alpha_mle, shape2 = beta_mle)
+
+# Convert density values into a data frame for ggplot
+
+
+# Convert original data into a data frame
+wb_data_df <- data.frame(wb.clean)
+
+# Step 4: Plot the density estimate of the data and overlay MOM and MLE Beta distributions
+hist_plot <- ggplot(wb_data_df, aes(x = wb.clean)) +
+  geom_histogram(aes(y = ..density..), bins = 30, color = "black", fill = "blue", alpha = 0.5) +
+  labs(title = "Histogram of 2022 Data", x = "Values", y = "Density") +
+  theme_minimal()
 ###Solve for MLE
-optim(par = c(1,1),
-      fn = llbeta,
-      data = wb.data$`2022_data`,
-      neg = F)
-
-
 
 #############
 # Task 8 -- Which estimators should we use?
