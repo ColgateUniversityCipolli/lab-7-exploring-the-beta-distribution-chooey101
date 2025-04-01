@@ -157,6 +157,7 @@ graph_funct <- function(alpha, beta){
   
   return(results)
 }
+graph_funct(2,5)
 #################################
 #######Task 4########
 #################################
@@ -209,12 +210,12 @@ p4 <- ggplot(df, aes(x = Index, y = Kurtosis)) +
 #Task 4.5---Using Loops
 #############################
 true_stats <- stat_funct(2, 5)
-set.seed(7272 + i)
+set.seed(7272)
 beta_values <- rbeta(500, shape1 = 2, shape2 = 5) #beta distribution for alpha=5 and beta=2
-cum_beta <- cumean(beta_values)
+cum_beta <- cummean(beta_values)
 cum_variance  <- cumvar(beta_values)
-cum_skewness  <- cumskewness(beta_values)
-cum_kurtosis  <- cumkurtosis(beta_values) - 3
+cum_skewness  <- cumskew(beta_values)
+cum_kurtosis  <- cumkurt(beta_values) - 3
 
 df <- data.frame(
   Index = 1:500,
@@ -247,10 +248,10 @@ for(i in 2:50){
   
   df_iter <- data.frame(
     Index = 1:500,
-    Mean = cumean(beta_values),
+    Mean = cummean(beta_values),
     Variance = cumvar(beta_values),
-    Skewness = cumskewness(beta_values),
-    Kurtosis = cumkurtosis(beta_values) - 3
+    Skewness = cumskew(beta_values),
+    Kurtosis = cumkurt(beta_values) - 3
   )
   
   # Add lines for each iteration to plots with varying colors
@@ -279,7 +280,7 @@ sim_results <- tibble(
 #######Task 5########
 #################################
 for (i in 1:1000) {
-  set.seed(7272 + i)
+  set.seed(7272+i)
   beta_values <- rbeta(500, shape1 = 2, shape2 = 5)
   
   # Calculate statistics
@@ -337,7 +338,7 @@ p_kurtosis
 
 ##Task 6##
 wb.data <- read_csv("wbdata.csv") 
-wb.data <- wb.data[-2, ] |>
+wb.data <- wb.data |>
   select(67) |>
   rename("2022_data" = "...67")|>
   mutate(`2022_data` = if_else(row_number() %in% 2:267, `2022_data` / 1000, `2022_data`))
@@ -352,32 +353,53 @@ MOM.beta.fn <- function(data, par){
   
   EX1 <- (alpha)/(alpha+beta)
   EX2 <- ((alpha+1)*alpha)/((alpha+beta+1)*(alpha+beta))
-  m1 <- mean(data)
-  m2 <- mean((data)^2)
+  m1 <- mean(data, na.rm = T)
+  m2 <- mean(((data)^2), na.rm = T)
   estimates <- c(EX1-m1,EX2-m2)
   return (estimates) # Goal: find lambda so this is 0
 }
 #Solve for MOM
-nleqslv(x=c(1,1),
-        fn = MOM.beta,
+mom_result <- nleqslv(x=c(1,1),
+        fn = MOM.beta.fn,
         data=wb.data$`2022_data`)
 
+alpha_mom <- mom_result$x[1]
+beta_mom <- mom_result$x[2]
+
+data_df <- data.frame(x = wb.data$`2022_data`)
+
+ggplot(data = data_df, aes(x = x)) +
+  # Plot the histogram
+  geom_histogram(aes(y = ..density..),bins=30
+                 , fill = "lightblue", color = "black") +
+  
+  # Add the MOM Beta distribution
+  stat_function(
+    fun = function(x) dbeta(x, shape1 = alpha_mom, shape2 = beta_mom),
+    color = "red", size = 1.5
+  ) +
+  
+  # Customize the plot
+  labs(
+    title = "Histogram of Data with MOM Beta Distribution",
+    x = "Data Values",
+    y = "Density"
+  ) +
+  theme_minimal()
+
 #MLE Function
-llbeta <- function(data, par, neg=FALSE){
+llbeta <- function(par, data, neg=FALSE){
   alpha <- par[1]
   beta <- par[2]  
-  loglik <- sum(log(dbeta(x=data, shape1 = alpha, shape2 = beta)))
+  loglik <- sum(log(dbeta(x=data, shape1 = alpha, shape2 = beta)), na.rm=T)
   
   return(ifelse(neg, -loglik, loglik))
 }
 
 ###Solve for MLE
-optim(par = 2,
+optim(par = c(1,1),
       fn = llbeta,
-      data=wb.data$`2022_data`,
-      method = "Brent",
-      lower = 0,
-      upper = 1,
+      data = wb.data$`2022_data`,
       neg = F)
 
 
